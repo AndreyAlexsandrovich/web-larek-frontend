@@ -1,10 +1,10 @@
 export interface ICardItem { 
-    _id: number;
-    title: string;
-    tag: string; 
-    image: string; 
-    price: number;
+    _id: string;
     description: string;
+    image: string; 
+    title: string;
+    category: string; 
+    price: number;
 }
 
 export interface IUserData { 

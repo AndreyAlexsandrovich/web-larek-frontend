@@ -1,19 +1,27 @@
-import { ICardItem } from '../types/index'
+import { ICardItem, IUserData } from '../types/index'
 type PaymentMethod = 'online' | 'cash_on_delivery';
 
 export class WebLarekModel {
     protected items: ICardItem[] = [];
-    protected isValid: boolean = false;
+    protected isValid?: boolean = false;
     protected paymentMethod?: PaymentMethod;
 
-    constructor() { }
+    // constructor() { }
 
     totalAmount(): number {
         return this.items.reduce((sum, item) => sum + item.price, 0);
     }
 
-    validationForm(form: any): boolean {
-        this.isValid = true;
+    validationForm(userData: IUserData): boolean {
+        const phoneRegex = /^\+?\d{9,15}$/;
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        const isAddressValid = userData.address.trim().length >= 5;
+
+
+        const isPhoneValid = phoneRegex.test(userData.phone);
+        const isEmailValid = emailRegex.test(userData.email);
+
+        this.isValid = isPhoneValid && isEmailValid && isAddressValid;
         return this.isValid
     }
 
@@ -27,11 +35,16 @@ export class WebLarekModel {
     }
 
     deleteItem(item: ICardItem): ICardItem[] {
-        this.items = this.items.filter(i => i.id !== item.id)
+        this.items = this.items.filter(i => i._id !== item._id)
         return this.items;
     }
 
-    getItems(): ICardItem[] { 
+    getItem(id: string): ICardItem | undefined {
+        return this.items.find(item => item._id === id)
+    }
+
+    getItems(items: Array<ICardItem>): ICardItem[] {
+        this.items.push(...items);
         return this.items;
     }
 }

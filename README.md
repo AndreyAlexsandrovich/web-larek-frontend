@@ -46,7 +46,7 @@ yarn build
 
 ## класс WebLarekModel: 
 
-Класс модели для управления корзиной товаров и оплатой. Основная бизнес-логика
+Класс модели для управления корзиной товаров и оплатой. В этом классе основная бизнес-логика
 
 ```
 export class WebLarekModel {
@@ -78,15 +78,23 @@ totalAmount(): number {
 
 ### метод validationForm:
 
-Проверяет корректность данных формы.
+Проверяет корректность данных веденными пользователям.
 
- - ** @param ** {any} form - Объект с данными формы.
+ - ** @param ** {userData: IUserData} данные которые ввел пользователь.
 
  - ** @returns ** {boolean} true, если данные валидны, иначе false.
 
 ```
-validationForm(form: any): boolean {
-        this.isValid = true;
+validationForm(userData: IUserData): boolean {
+        const phoneRegex = /^\+?\d{9,15}$/;
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        const isAddressValid = userData.address.trim().length >= 5;
+
+
+        const isPhoneValid = phoneRegex.test(userData.phone);
+        const isEmailValid = emailRegex.test(userData.email);
+
+        this.isValid = isPhoneValid && isEmailValid && isAddressValid;
         return this.isValid
     }
 ```
@@ -134,6 +142,18 @@ validationForm(form: any): boolean {
 ```
 
 
+### метод getItem: 
+
+Возращает определенный товар по его индексу, если такого товара нет, возращает undefined
+
+ - ** @returns ** {ICardItem | undefined} возращает товар или undefined .
+
+```
+getItem(id: string): ICardItem | undefined {
+        return this.items.find(item => item._id === id)
+    }
+```
+
 ### метод getItems:
 
 Возращает текущий список товаров в коризне.
@@ -143,5 +163,41 @@ validationForm(form: any): boolean {
 ```
   getItems(): ICardItem[] { 
         return this.items;
+    }
+```
+
+# Описания файла WebLarekApi
+
+Класс для работы с сервером для получения товаров и их удаление.
+
+## методы 
+
+### метод getItems
+
+- ** @returns ** {Promise<ICardItem[]>} возращает промис и получение список товаров с сервера.
+
+```
+getItems(): Promise<ICardItem[]> {
+        return this.get<ICardItem[]>('/product');
+    }
+```
+
+### метод deleteItem
+
+- ** @returns ** {Promise<ICardItem>} возращает промис и удаленный товар пользователям.
+
+```
+deleteItem(data: Partial<ICardItem>): Promise<ICardItem> {
+        return this.post<ICardItem>('/product', data, 'DELETE')
+    }
+```
+
+### метод addItem 
+
+- ** @returns ** {Promise<ICardItem>} возращает промис и добавляемый товар пользователям.
+
+```
+addItem(data: Partial<ICardItem>): Promise<ICardItem> {
+        return this.post<ICardItem>('/product', data)
     }
 ```

@@ -1,14 +1,19 @@
 import { Api } from '../components/base/api';
 import { ICardItem } from '../types/index';
 
+interface IItemsResponse { 
+    total: number,
+    items: ICardItem[],
+}
+
 export class WebLarekApi extends Api {
 
     constructor(baseUrl: string) {
         super(baseUrl)
     }
 
-    getItems(): Promise<ICardItem[]> {
-        return this.get<ICardItem[]>('/product');
+    getItemsData(): Promise<IItemsResponse> {
+        return this.get<IItemsResponse>('/product');
     }
 
     deleteItem(data: Partial<ICardItem>): Promise<ICardItem> {

@@ -611,3 +611,97 @@ set description(value: string) {
     this.setText(this.itemDescription, value);
 }
 ```
+
+
+# Описание файла formCart
+
+## Описание класса `formCart`
+
+Класс отвечает за отображение и управление списком товаров в корзине. Наследуется от базового класса `Component<IProduct>`, принимает и отображает массив товаров, выбранных пользователем.
+
+```
+export class formCart extends Component<IProduct> {
+
+    ... // Код
+
+}
+```
+
+## Описание интерфейса IProduct
+
+Интерфейс описывает структуру объекта товара с двумя основными полями: название и цена.
+
+```
+interface IProduct {
+    title: string;
+    price: number;
+}
+```
+
+## Поля класса
+
+```
+protected productList: HTMLElement;
+protected buttonCart: HTMLButtonElement;
+protected products: IProduct[] = [];
+```
+
+* `productList` — контейнер для списка товаров в корзине.
+
+* `buttonCart` — кнопка, связанная с корзиной (например, для открытия или оформления).
+
+* `products` — массив товаров, добавленных в корзину.
+
+## Конструктор
+
+@param `container` — HTML-элемент контейнера, в котором расположены элементы корзины.
+
+* Инициализирует основные элементы корзины: кнопку и контейнер списка товаров, используя функцию ensureElement.
+
+```
+constructor(container: HTMLElement) {
+    super(container);
+    this.buttonCart = ensureElement('.button', this.container) as HTMLButtonElement;
+    this.productList = ensureElement('.basket__list', this.container);
+}
+
+```
+
+
+## Сеттер items
+
+* Устанавливает массив товаров для отображения в корзине и вызывает метод render для обновления интерфейса.
+
+```
+set items(products: IProduct[]) {
+    this.products = products;
+    this.render();
+}
+```
+
+## Метод render
+* Отвечает за обновление DOM-элементов списка товаров в корзине.
+
+* Если передан параметр data (частичный объект товара), отобразит только этот товар.
+
+* Если параметр отсутствует, отобразит весь массив products.
+
+* Возвращает элемент контейнера списка товаров.
+
+
+```
+public render(data?: Partial<IProduct>): HTMLElement {
+    this.productList.innerHTML = '';
+
+    const productsToRender = data ? [data as IProduct] : this.products;
+
+    productsToRender.forEach(product => {
+        const li = document.createElement('li');
+        li.textContent = `${product.title} — ${product.price} спинов`;
+        this.productList.appendChild(li);
+    });
+
+    return this.productList;
+}
+
+```

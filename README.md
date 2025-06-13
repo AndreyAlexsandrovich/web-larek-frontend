@@ -48,19 +48,14 @@ yarn build
 
 Класс модели для управления корзиной товаров и оплатой. В этом классе основная бизнес-логика
 
-```
-export class WebLarekModel {
-    код.... 
-}
-```
 
 ### поля 
+* items - защищенное поле который будет в себе содержать массив товаров 
 
-```
-protected items: ICardItem[] = []; <!-- массив товаров -->
-     protected isValid: boolean = false; <!-- флаг валидности данных  -->
-    protected paymentMethod?: PaymentMethod;  <!-- выбранный способ оплаты -->
-```
+* isValid - защищенное поле  валидности формы. Возращает true, иначе false
+
+* paymentMethod - защищенное поле содержащий способо оплаты 
+
 
 ## методы
 
@@ -70,11 +65,6 @@ protected items: ICardItem[] = []; <!-- массив товаров -->
 
  - ** @returns ** {number} общая сумма товара.
 
-```
-totalAmount(): number {
-        return this.items.reduce((sum, item) => sum + item.price, 0);
-    }
-```
 
 ### метод validationForm:
 
@@ -84,32 +74,11 @@ totalAmount(): number {
 
  - ** @returns ** {boolean} true, если данные валидны, иначе false.
 
-```
-validationForm(userData: IUserData): boolean {
-        const phoneRegex = /^\+?\d{9,15}$/;
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        const isAddressValid = userData.address.trim().length >= 5;
-
-
-        const isPhoneValid = phoneRegex.test(userData.phone);
-        const isEmailValid = emailRegex.test(userData.email);
-
-        this.isValid = isPhoneValid && isEmailValid && isAddressValid;
-        return this.isValid
-    }
-```
-
 ### метод setPaymentMethod:
 
 Устанавливает выбранный пользователем способ оплаты.
 
  - ** @param ** {method} method - способо оплаты ('online' или 'cash_on_delivery').
-
-```
- setPaymentMethod(method: PaymentMethod): void {
-        this.paymentMethod = method;
-    }
-```
 
 ### метод addToCart:
 
@@ -119,12 +88,6 @@ validationForm(userData: IUserData): boolean {
 
  - ** @returns ** {number} возращает  количество товаров в корзине.
 
-```
- addToCart(item: ICardItem): number {
-        this.items.push(item);
-        return this.items.length;
-    }
-```
 
 ### метод deleteItem:
 
@@ -134,12 +97,6 @@ validationForm(userData: IUserData): boolean {
 
  - ** @returns ** {ICardItem[]} обновленный список товаров в корзине.
 
-```
- deleteItem(item: ICardItem): ICardItem[] {
-        this.items = this.items.filter(i => i.id !== item.id)
-        return this.items;
-    }
-```
 
 
 ### метод getItem: 
@@ -148,11 +105,6 @@ validationForm(userData: IUserData): boolean {
 
  - ** @returns ** {ICardItem | undefined} возращает товар или undefined .
 
-```
-getItem(id: string): ICardItem | undefined {
-        return this.items.find(item => item._id === id)
-    }
-```
 
 ### метод getItems:
 
@@ -160,15 +112,17 @@ getItem(id: string): ICardItem | undefined {
 
  - ** @returns ** {ICardItem[]} массив товаров в корзине.
 
-```
-  getItems(): ICardItem[] { 
-        return this.items;
-    }
-```
 
 # Описания файла WebLarekApi
 
-Класс для работы с товаров с сервера.
+Класс WebLarekApi расширяет базовый класс Api и предоставляет методы для взаимодействия с серверным API, связанным с товарами магазина. Отвечает за получение списка товаров, добавление нового товара и удаление существующего.
+
+## Интерфейс IItemsResponse
+ * Определяет структуру ответа от сервера при запросе списка товаров
+
+## Конструктор 
+
+* @param baseUrl — базовый URL API, передаётся в конструктор базового класса Api.
 
 ## методы 
 
@@ -176,175 +130,90 @@ getItem(id: string): ICardItem | undefined {
 
 - ** @returns ** {Promise<ICardItem[]>} возращает промис и получение список товаров с сервера.
 
-```
-getItems(): Promise<ICardItem[]> {
-        return this.get<ICardItem[]>('/product');
-    }
-```
 
 ### метод deleteItem
 
 - ** @returns ** {Promise<ICardItem>} возращает промис и удаленный товар пользователям.
 
-```
-deleteItem(data: Partial<ICardItem>): Promise<ICardItem> {
-        return this.post<ICardItem>('/product', data, 'DELETE')
-    }
-```
 
 ### метод addItem 
 
 - ** @returns ** {Promise<ICardItem>} возращает промис и добавляемый товар пользователям.
 
-```
-addItem(data: Partial<ICardItem>): Promise<ICardItem> {
-        return this.post<ICardItem>('/product', data)
-    }
-```
 
 
-# Описания файла item
+# Описания файла item             
 
-## описания класса item
+## описания класса Item
 
-```
-import { Component } from '../components/base/Component'
-import { ensureElement } from '../utils/utils';
-import { ICardItem } from '../types/index'
+* Класс Item отвечает за отображение информации о товаре в карточке товара. Наследуется от базового класса Component<ICardItem>, управляет DOM-элементами, отображающими название, изображение, цену и категорию товара.
 
-export class Item extends Component<ICardItem> {
+# Интерфейс ICardItem
 
-  .../ код
-}
-```
-
-Класс отвечающий за отображение передаваемых данных.
+Интерфейс описывающий данные о товаре: title, description, category, image, price.
 
 ### Поля класса 
 
-```
-protected itemTag: HTMLElement;
-    protected itemTitle: HTMLElement;
-    protected itemImage: HTMLImageElement;
-    protected itemPrice: HTMLElement;
-```
+Поля содержут имя карточки, категорию, изображение, цену. Имеют защищенное свойство protected 
 
-Поля содержут имя карточки, категорию, изображение, цену.
-
-### конструктов
+### конструктор
 
 Конструктов принимает на вход контейнер. В нем вызывается метод super чтобы при создании карточки объявился новый объект с новыми данными.
-Находит все динамические элементы чтобы в дальнейшем внести в них данные.
+Находит все динамические элементы при помощи ensureElement чтобы в дальнейшем внести в них данные.
 
-```
-constructor(container: HTMLElement) {
-        super(container);
-        this.itemTitle = ensureElement('.card__title', this.container);
-        this.itemImage = ensureElement('.card__image', this.container) as HTMLImageElement;
-        this.itemPrice = ensureElement('.card__price', this.container);
-        this.itemTag = ensureElement('.card__category', this.container);
-    }
-```
 
 ### set title 
 
 На вход принимает значение, название карточки и его подставляет. 
 
-```
-    set title(value: string) {
-        this.setText(this.itemTitle, value);
-    }
-```
 
 
 ### set image 
 
 На вход принимает значение, изображение карточки и его подставляет. 
 
-```
-     set image(value: string) {
-        this.setImage(this.itemImage, value);
-    }
-```
 
 ### set price
 
 На вход принимает значение, цену карточки и его подставляет. 
 
-```
-    set price(value: number) {
-        this.setText(this.itemPrice, value);
-    }
-```
 
 ### set category
 
 На вход принимает значение, категорию карточки и его подставляет. 
 
-```
-    set category(value: string) {
-        this.setText(this.itemTag, value);
-    }
-```
 
-# Описания файла item 
+# Описания файла Page
 
-## Класс Item 
+## Класс Page 
 
-Класс отвечает за отображение списка товаров на странице. Он принимает контейнер, внутри которого находится элемент с классом `.gallery`, и управляет его содержимым.
+Класс Page отвечает за управление отображением списка элементов товаров на странице. Наследуется от базового класса Component<IPage>. Управляет контейнером галереи и обновляет его содержимое.
 
-```
-import { ensureElement } from "../utils/utils";
-import { Component } from "./base/Component";
+## интерфейс IPage
+Интерфейс описывает структуру данных страницы с одним полем: 
 
-interface IPage { 
-    WebLarekItems: HTMLElement[];
-}
-
-export class Page extends Component<IPage> {
-
-.../ Код
-
-}
-```
+* WebLarekItems — массив HTML-элементов, представляющих товары для отображения.
 
 ## Поля класса 
 
-webLarekList - Поле которое сожержит контейнер в котором будет список товаров
+* webLarekList — контейнер галереи на странице, в котором отображаются элементы товаров.
 
-```
-protected webLarekList: HTMLElement;
-
-```
 
 # Конструктор 
 
 @param {HTMLElement} container - Родительский контейнер страницы, внутри которого будет искаться элемент с классом `.gallery`.
- * 
  * Инициализирует экземпляр класса, вызывая конструктор базового класса с контейнером.
  * Затем ищет и сохраняет в свойство `webLarekList` элемент с классом `.gallery` внутри переданного контейнера.
  * Если элемент не найден, выбрасывается ошибка (через функцию ensureElement).
 
-```
-constructor(container: HTMLElement) {
-        super(container);
-        this.webLarekList = ensureElement('.gallery', this.container);
-    }
-```
 
 # Сеттер для свойства WebLarekItems.
- * 
  * @param {HTMLElement[]} items - Массив HTML-элементов, представляющих товары для отображения.
  * 
  * Заменяет текущее содержимое элемента `webLarekList` на переданный массив элементов.
  * Использует метод `replaceChildren` для эффективного обновления DOM без лишних перерисовок.
  */
 
- ```
-set WebLarekItems(items: HTMLElement[]) { 
-    this.webLarekList.replaceChildren(...items);
-}
-```
 
 
 # описания файла Form 
@@ -352,42 +221,24 @@ set WebLarekItems(items: HTMLElement[]) {
 
 Класс принимает DOM-элементы и ими управляет
 
-```
-
-export class Form extends Component<IForm> {
-
-    .../ Код 
-
-}
-```
 
 ## Описания интерфейса IForm
 
 Интерфейс имеет значение с типом данных `string`
 
-```
-interface IForm {
-    value: string;
-}
-```
 
-## Поля класса
+## защищенные поля класса
 
-```
-  protected inputElementAddress: HTMLInputElement;
-    protected inputElementEmail: HTMLInputElement;
-    protected inputElementPhone: HTMLInputElement;
-    protected SubmitButton: HTMLButtonElement;
-    protected buttonCash: HTMLButtonElement;
-    protected buttonCard: HTMLButtonElement;
-```
+* inputElementAddress - поле с инпутом адресса 
+* inputElementEmail - поле с инпутом электронной почты 
+* inputElementPhone - поле с инпутом номера телефона 
+* SubmitButton - событийная кнопка для отправки данных  
+* buttonCash - кнопка если пользователь выбрал оплату при получении
+* buttonCard - кнопка если пользователь выбрал оплату онлайн 
 
 ## Приватные свойства
-
-```
-private currentStep = 0;
-    private stepUpdateButton = ['Далее', 'Далее', 'Оформить']
-```
+* currentStep - свойство содержащий в себе активного шага в форме
+* stepUpdateButton - свойство содержащий в себе массив названия кнопок
 
 ## Конструктор 
 
@@ -404,22 +255,6 @@ private currentStep = 0;
  * Добавляет обработчик события клика на кнопку отправки формы (SubmitButton),
  * который запускает метод nextStep() для перехода к следующему шагу оформления заказа.
 
-```
- constructor(container: HTMLElement) {
-        super(container)
-
-        this.inputElementAddress = ensureElement('input[name="address"]', this.container) as HTMLInputElement;
-        this.inputElementEmail = ensureElement('input[name="email"]', this.container) as HTMLInputElement;
-        this.inputElementPhone = ensureElement('input[name="phone"]', this.container) as HTMLInputElement;
-        this.SubmitButton = ensureElement('.button', this.container) as HTMLButtonElement;
-        this.buttonCash = ensureElement('button[name="cash"]', this.container) as HTMLButtonElement;
-        this.buttonCard = ensureElement('button[name="card"]', this.container) as HTMLButtonElement;
-
-        this.updateButtonText();
-
-        this.SubmitButton.addEventListener('click', () => this.nextStep());
-    }
-```
 
 ## сеттер value
 
@@ -427,11 +262,6 @@ private currentStep = 0;
  *
  * @param value - строка с адресом пользователя.
 
- ```
-set value(value: string) {
-        this.inputElementAddress.value = value;
-    }
- ```
 
  ## сеттер buttonText
 
@@ -439,11 +269,6 @@ set value(value: string) {
  *
  * @param value - текст, который будет отображён на кнопке.
 
- ```
- set buttonText(value: string) {
-        this.setText(this.SubmitButton, value)
-    }
- ```
 
  ## сеттер checkButtonCash
 
@@ -451,26 +276,14 @@ set value(value: string) {
  *
  * @param value - если true, кнопка карты становится активной, иначе неактивной.
 
- ```
-   set checkButtonCash(value: boolean) {
-        this.toggleClass(this.buttonCash, 'alt-active', value)
-        this.toggleClass(this.buttonCard, 'alt-active', !value)
-    }
- ```
+
 
 ## сеттер checkButtonCard
 
-* Активирует кнопку оплаты наличными и деактивирует кнопку оплаты картой.
+ * Активирует кнопку оплаты наличными и деактивирует кнопку оплаты картой.
  *
  * @param value - если true, кнопка наличных становится активной, иначе неактивной.
 
-
- ```
-set checkButtonCard(value: boolean) {
-        this.toggleClass(this.buttonCard, 'alt-active', value)
-        this.toggleClass(this.buttonCash, 'alt-active', !value)
-    }
- ```
 
  ## метод updateButtonText
 
@@ -479,29 +292,11 @@ set checkButtonCard(value: boolean) {
  * Если текст для текущего шага отсутствует, устанавливает значение по умолчанию "Далее".
 
 
- ```
-private updateButtonText() {
-    this.buttonText = this.stepUpdateButton[this.currentStep] || 'Далее';
-}
- ```
-
-
  ## метод nextStep 
 
 * Переходит к следующему шагу оформления заказа.
  * Если текущий шаг не последний, увеличивает счётчик шага и обновляет текст кнопки.
  * Если шаг последний, вызывает отправку формы методом submitForm().
-
- ```
-private nextStep() {
-    if (this.currentStep < this.stepUpdateButton.length - 1) {
-        this.currentStep++;
-        this.updateButtonText();
-    } else {
-        this.submitForm();
-    }
-}
- ```
 
  ## метод submitForm 
 
@@ -509,52 +304,37 @@ private nextStep() {
  * В текущей реализации выводит в консоль сообщение о том, что форма отправлена.
  * Здесь можно добавить логику отправки данных на сервер.
 
- ```
-private submitForm() {
-    console.log('Форма отправлена');
-}
- ```
+## Метод closeModal
 
+* Метод обеспечивает закрытие модального окна при любом из следующих действий пользователя:
+
+* Нажатие клавиши Escape (Esc).
+
+* Клик вне области модального окна (на затемнённой подложке).
+
+* Клик на кнопку закрытия (крестик) внутри модального окна.
 
 # Описание файла ModalProduct
 
 ## Описание класса ModalProduct
+* Класс ModalProduct отвечает за отображение подробной информации о товаре в модальном окне. Наследуется от базового класса Component<ICardItem>. Использует HTML-шаблон для динамического создания содержимого и предоставляет сеттеры для установки данных товара.
 
-Класс отвечает за отображение подробной информации о товаре в модальном окне, используя шаблон из DOM и методы для установки текста и изображений в соответствующие элементы.
-
-```
-export class ModalProduct extends Component<ICardItem> {
-
-    ... // Код
-
-}
-```
-
-## Описание интерфейса ICardItem
-
-Интерфейс описывает структуру объекта товара с необходимыми полями, например title, price, category, description, image и др.
-
-```
-interface ICardItem {
-    title: string;
-    price: number;
-    category: string;
-    description: string;
-    image: string;
-    // другие поля по необходимости
-}
-
-```
 ## Поля класса
-```
-protected templateContainer: HTMLTemplateElement;
-protected itemTag: HTMLElement;
-protected itemTitle: HTMLElement;
-protected itemImage: HTMLImageElement;
-protected itemPrice: HTMLElement;
-protected buttonPay: HTMLButtonElement;
-protected itemDescription: HTMLElement;
-```
+
+* templateContainer — HTML-шаблон модального окна.
+
+* itemTitle — элемент для отображения названия товара.
+
+* itemImage — элемент для отображения изображения товара.
+
+* itemPrice — элемент для отображения цены товара.
+
+* itemTag — элемент для отображения категории товара.
+
+* buttonPay — кнопка оплаты.
+
+* itemDescription — элемент для отображения описания товара.
+
 ## Конструктор
 @param container - HTML-элемент контейнера, в который будет вставлен клон шаблона модального окна.
 
@@ -562,89 +342,34 @@ protected itemDescription: HTMLElement;
 
 Инициализирует основные элементы модального окна (заголовок, изображение, цена, категория, кнопка оплаты, описание) с помощью функции ensureElement.
 
-```
-constructor(container: HTMLElement) {
-    super(container);
-    this.templateContainer = document.querySelector("#card-preview") as HTMLTemplateElement;
-
-    const templateClone = this.templateContainer.content.cloneNode(true) as DocumentFragment;
-    container.appendChild(templateClone);
-
-    this.itemTitle = ensureElement('.card__title', container);
-    this.itemImage = ensureElement('.card__image', container) as HTMLImageElement;
-    this.itemPrice = ensureElement('.card__price', container);
-    this.itemTag = ensureElement('.card__category', container);
-    this.buttonPay = ensureElement('.button', container) as HTMLButtonElement;
-    this.itemDescription = ensureElement('.card__text', container);
-}
-
-```
 ## Сеттеры
-### title — устанавливает заголовок товара.
 
-### image — устанавливает URL изображения товара.
+* title — устанавливает заголовок товара.
 
-### price — устанавливает цену товара с добавлением текста "спинов".
+* image — устанавливает URL изображения товара.
 
-### category — устанавливает категорию товара.
+* price — устанавливает цену товара с добавлением текста "спинов".
 
-### description — устанавливает описание товара.
+* category — устанавливает категорию товара.
 
-```
-set title(value: string) {
-    this.setText(this.itemTitle, value);
-}
+* description — устанавливает описание товара.
 
-set image(value: string) {
-    this.setImage(this.itemImage, value);
-}
-
-set price(value: number) {
-    this.setText(this.itemPrice, `${value} спинов`);
-}
-
-set category(value: string) {
-    this.setText(this.itemTag, value);
-}
-
-set description(value: string) {
-    this.setText(this.itemDescription, value);
-}
-```
 
 
 # Описание файла formCart
 
-## Описание класса `formCart`
+## Описание класса `FormCart`
 
-Класс отвечает за отображение и управление списком товаров в корзине. Наследуется от базового класса `Component<IProduct>`, принимает и отображает массив товаров, выбранных пользователем.
+Класс formCart отвечает за отображение и управление списком товаров в корзине пользователя. Наследуется от базового класса Component<IProduct>. Позволяет устанавливать список товаров и обновлять отображение корзины.
 
-```
-export class formCart extends Component<IProduct> {
-
-    ... // Код
-
-}
-```
 
 ## Описание интерфейса IProduct
 
 Интерфейс описывает структуру объекта товара с двумя основными полями: название и цена.
 
-```
-interface IProduct {
-    title: string;
-    price: number;
-}
-```
 
 ## Поля класса
 
-```
-protected productList: HTMLElement;
-protected buttonCart: HTMLButtonElement;
-protected products: IProduct[] = [];
-```
 
 * `productList` — контейнер для списка товаров в корзине.
 
@@ -658,28 +383,12 @@ protected products: IProduct[] = [];
 
 * Инициализирует основные элементы корзины: кнопку и контейнер списка товаров, используя функцию ensureElement.
 
-```
-constructor(container: HTMLElement) {
-    super(container);
-    this.buttonCart = ensureElement('.button', this.container) as HTMLButtonElement;
-    this.productList = ensureElement('.basket__list', this.container);
-}
-
-```
-
 
 ## Сеттер items
 
 * Устанавливает массив товаров для отображения в корзине и вызывает метод render для обновления интерфейса.
 
-```
-set items(products: IProduct[]) {
-    this.products = products;
-    this.render();
-}
-```
-
-## Метод render
+## Публичный метод render
 * Отвечает за обновление DOM-элементов списка товаров в корзине.
 
 * Если передан параметр data (частичный объект товара), отобразит только этот товар.
@@ -688,20 +397,54 @@ set items(products: IProduct[]) {
 
 * Возвращает элемент контейнера списка товаров.
 
+### Описание класса ModalSuccess
 
-```
-public render(data?: Partial<IProduct>): HTMLElement {
-    this.productList.innerHTML = '';
+* Класс ModalSuccess отвечает за отображение модального окна с сообщением об успешной покупке. Наследуется от базового класса Component<unknown> * (или другого подходящего интерфейса) и управляет показом и скрытием модального окна с подтверждением успешного оформления заказа.
 
-    const productsToRender = data ? [data as IProduct] : this.products;
+## Поля класса
 
-    productsToRender.forEach(product => {
-        const li = document.createElement('li');
-        li.textContent = `${product.title} — ${product.price} спинов`;
-        this.productList.appendChild(li);
-    });
+* modalContainer — контейнер модального окна.
 
-    return this.productList;
-}
+* closeButton — кнопка для закрытия модального окна.
 
-```
+* messageElement — элемент для отображения текста сообщения.
+
+
+## Конструктор
+
+* @param container — HTML-элемент контейнера, в который вставляется модальное окно.
+
+* Инициализирует элементы модального окна и навешивает обработчик на кнопку закрытия.
+
+
+## Методы 
+
+* show - Отображает модальное окно с сообщением об успешной покупке.
+
+* hide - Скрывает модальное окно.
+
+
+## Описание класса counterProducts
+
+Функциональность `counterProducts` реализует отображение счетчика количества товаров на кнопке корзины в правом верхнем углу. При добавлении каждого нового товара счетчик увеличивается на единицу, показывая текущее количество товаров в корзине.
+
+## Поля класса
+
+* cartCounter — DOM-элемент, отображающий числовое значение счетчика товаров на кнопке корзины
+
+## Конструктор
+* Инициализирует кнопку корзины и элемент счетчика с помощью функции ensureElement.
+
+* Вызывает метод updateCounter для установки начального состояния счетчика (скрыт, если товаров нет).
+
+## Метод addItem
+* Добавляет товар в массив products.
+
+* Обновляет отображение списка товаров вызовом render.
+
+* Обновляет счетчик товаров вызовом updateCounter.
+
+## Метод updateCounter
+* Обновляет текст счетчика, устанавливая его равным количеству товаров в корзине.
+
+* Показывает счетчик, если товаров больше нуля, и скрывает, если корзина пуста.
